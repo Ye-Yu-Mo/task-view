@@ -1,36 +1,113 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# =====================
+# Rust 项目相关
+# =====================
+/target/
+**/*.rs.bk
+Cargo.lock
 
-# testing
-/coverage
+# =====================
+# 数据库文件
+# =====================
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+database.db
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# =====================
+# 日志文件
+# =====================
+*.log
+logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# =====================
+# 依赖和构建输出
+# =====================
+/node_modules
+/.pnp
+.pnp.js
+/dist
+/build
+/.next
+/out
+/.parcel-cache
+/.cache
+
+# =====================
+# 环境变量
+# =====================
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
 
-# vercel
-.vercel
+# =====================
+# IDE 和编辑器
+# =====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# typescript
+# =====================
+# 操作系统文件
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# TypeScript
+# =====================
 *.tsbuildinfo
 next-env.d.ts
+
+# =====================
+# 测试覆盖率
+# =====================
+/coverage
+.nyc_output/
+
+# =====================
+# 运行时数据
+# =====================
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# =====================
+# 临时文件夹
+# =====================
+/tmp
+/temp
+
+# =====================
+# 其他
+# =====================
+*.pem
+.vercel
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.cache
+.parcel-cache
+.nuxt
+.vuepress/dist
+.serverless
+.fusebox/
+.dynamodb/
+.tern-port
+.vscode-test
+
+target
+*.db
