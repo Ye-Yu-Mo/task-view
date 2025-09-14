@@ -47,8 +47,8 @@ export const UseInvitePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+    <div className="min-h-screen py-8">
+      <div className="max-w-md mx-auto modern-card p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
           使用邀请码
         </h1>

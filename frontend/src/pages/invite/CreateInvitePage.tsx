@@ -77,7 +77,7 @@ export const CreateInvitePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+      <div className="max-w-md mx-auto modern-card p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
           生成邀请码
         </h1>
@@ -164,7 +164,7 @@ export const CreateInvitePage: React.FC = () => {
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <span className="font-mono text-sm bg-white px-2 py-1 rounded border">
+                      <span className="font-mono text-sm bg-gray-50 px-2 py-1 rounded border">
                         {invite.code}
                       </span>
                       <span className={`ml-2 text-xs px-2 py-1 rounded ${

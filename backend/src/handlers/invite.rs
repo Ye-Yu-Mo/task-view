@@ -236,3 +236,27 @@ pub async fn get_executor_invites(
         invites: invite_responses,
     }))
 }
+
+
+// 获取邀请码详情
+pub async fn get_invite_details(
+    State(db): State<DatabaseConnection>,
+    axum::extract::Path(invite_id): axum::extract::Path<String>,
+) -> Result<Json<InviteResponse>, StatusCode> {
+    let invite = Invite::find()
+        .filter(invite::Column::Id.eq(&invite_id))
+        .one(&db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .ok_or(StatusCode::NOT_FOUND)?;
+
+    Ok(Json(InviteResponse {
+        id: invite.id,
+        code: invite.code,
+        creator_id: invite.creator_id,
+        executor_id: invite.executor_id,
+        status: invite.status,
+        created_at: invite.created_at.to_rfc3339(),
+        used_at: invite.used_at.map(|dt| dt.to_rfc3339()),
+    }))
+}

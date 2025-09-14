@@ -44,29 +44,16 @@ const TaskListPage: React.FC = () => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusConfig = (status: string) => {
     switch (status) {
       case 'todo':
-        return '待处理';
+        return { text: '待处理', className: 'status-badge status-badge--todo' };
       case 'in_progress':
-        return '进行中';
+        return { text: '进行中', className: 'status-badge status-badge--progress' };
       case 'done':
-        return '已完成';
+        return { text: '已完成', className: 'status-badge status-badge--done' };
       default:
-        return status;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'todo':
-        return 'bg-gray-100 text-gray-800';
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'done':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+        return { text: status, className: 'status-badge status-badge--todo' };
     }
   };
 
@@ -97,20 +84,18 @@ const TaskListPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">加载中...</p>
-        </div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p className="mt-4 text-gray-600">加载中...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-600 text-lg mb-4">{error}</div>
+          <div className="error-alert mb-4">{error}</div>
           <Button onClick={loadTasks}>重试</Button>
         </div>
       </div>
@@ -118,7 +103,7 @@ const TaskListPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">任务列表</h1>
@@ -143,11 +128,11 @@ const TaskListPage: React.FC = () => {
         ) : (
           <div className="grid gap-6">
             {tasks.map((task) => (
-              <div key={task.id} className="bg-white rounded-lg shadow-md p-6">
+              <div key={task.id} className="modern-card p-6">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-semibold text-gray-900">{task.title}</h3>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(task.status)}`}>
-                    {getStatusText(task.status)}
+                  <span className={getStatusConfig(task.status).className}>
+                    {getStatusConfig(task.status).text}
                   </span>
                 </div>
 
@@ -196,7 +181,7 @@ const TaskListPage: React.FC = () => {
         {/* 删除确认对话框 */}
         {showDeleteConfirm && deletingTaskId && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <div className="modern-card p-6 max-w-md mx-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">确认删除</h3>
               <p className="text-gray-600 mb-6">确定要删除这个任务吗？此操作不可恢复。</p>
               <div className="flex space-x-4 justify-end">

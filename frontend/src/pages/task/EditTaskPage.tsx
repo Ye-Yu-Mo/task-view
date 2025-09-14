@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTasks, updateTask } from '../../services/task';
-import { useAuth } from '../../context/AuthContext';
+// import { useAuth } from '../../context/AuthContext'; // TODO: 添加权限检查
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 
@@ -14,7 +14,8 @@ const EditTaskPage: React.FC = () => {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState('');
   
-  const { user } = useAuth();
+  // TODO: 添加权限检查
+  // const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -99,8 +100,8 @@ const EditTaskPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto modern-card p-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">编辑任务</h2>
         </div>

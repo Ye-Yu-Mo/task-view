@@ -37,6 +37,11 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   return await api.post('/auth/login', data);
 };
 
+// 获取用户信息
+export const getUserById = async (userId: string): Promise<User> => {
+  return await api.get(`/users/${userId}`);
+};
+
 // 健康检查
 export const healthCheck = async () => {
   return await api.get('/health');

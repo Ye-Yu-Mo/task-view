@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getTasks, updateTaskStatus, type Task } from '../services/task';
+import { getTasks, updateTaskStatus, updateTask, type Task } from '../services/task';
+import { getUserById } from '../services/auth';
+import { getInviteDetails, type Invite } from '../services/invite';
 import { Button } from '../components/ui/Button';
 
 export const BoardPage: React.FC = () => {
@@ -10,6 +12,8 @@ export const BoardPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userCache, setUserCache] = useState<Map<string, string>>(new Map()); // 用户ID -> 用户名的缓存
+  const [inviteInfo, setInviteInfo] = useState<Invite | null>(null); // 邀请码信息
 
   useEffect(() => {
     if (inviteId) {
@@ -23,13 +27,59 @@ export const BoardPage: React.FC = () => {
     setIsLoading(true);
     setError('');
     try {
-      const response = await getTasks(inviteId);
-      setTasks(response.tasks);
+      // 并行加载任务和邀请码信息
+      const [tasksResponse, inviteResponse] = await Promise.all([
+        getTasks(inviteId),
+        getInviteDetails(inviteId)
+      ]);
+      
+      setTasks(tasksResponse.tasks);
+      setInviteInfo(inviteResponse);
+      
+      // 加载用户名信息，包括邀请码执行者
+      await loadUserNames(tasksResponse.tasks, inviteResponse);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载任务失败');
+      setError(err instanceof Error ? err.message : '加载数据失败');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadUserNames = async (tasks: Task[], invite?: Invite | null) => {
+    const userIds = new Set<string>();
+    
+    // 收集所有需要获取的用户ID
+    tasks.forEach(task => {
+      userIds.add(task.creator_id);
+      if (task.executor_id) {
+        userIds.add(task.executor_id);
+      }
+    });
+    
+    // 如果有邀请码执行者，也加入用户ID列表
+    if (invite?.executor_id) {
+      userIds.add(invite.executor_id);
+    }
+
+    // 使用函数式更新避免依赖问题
+    setUserCache(currentCache => {
+      const newUserCache = new Map(currentCache);
+      
+      // 异步获取用户信息
+      userIds.forEach(async userId => {
+        if (!newUserCache.has(userId)) {
+          try {
+            const userInfo = await getUserById(userId);
+            setUserCache(cache => new Map(cache.set(userId, userInfo.username)));
+          } catch (err) {
+            console.error(`获取用户信息失败 ${userId}:`, err);
+            setUserCache(cache => new Map(cache.set(userId, '未知用户')));
+          }
+        }
+      });
+      
+      return newUserCache;
+    });
   };
 
   const handleStatusChange = async (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => {
@@ -43,6 +93,20 @@ export const BoardPage: React.FC = () => {
       );
     } catch (err) {
       setError('更新任务状态失败');
+    }
+  };
+
+  const handleAssignExecutor = async (taskId: string, executorId: string) => {
+    try {
+      await updateTask(taskId, { executor_id: executorId });
+      // 更新本地状态
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? { ...task, executor_id: executorId } : task
+        )
+      );
+    } catch (err) {
+      setError('分配执行者失败');
     }
   };
 
@@ -73,15 +137,10 @@ export const BoardPage: React.FC = () => {
   const inProgressTasks = tasks.filter(task => task.status === 'in_progress');
   const doneTasks = tasks.filter(task => task.status === 'done');
 
-  const statusConfig = {
-    todo: { title: '待处理', color: 'bg-gray-100', textColor: 'text-gray-800' },
-    in_progress: { title: '进行中', color: 'bg-blue-100', textColor: 'text-blue-800' },
-    done: { title: '已完成', color: 'bg-green-100', textColor: 'text-green-800' }
-  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
+    <div className="min-h-screen">
+      <header className="modern-header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
@@ -108,7 +167,7 @@ export const BoardPage: React.FC = () => {
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+          <div className="error-alert mb-6">
             {error}
           </div>
         )}
@@ -120,13 +179,13 @@ export const BoardPage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* 待处理列 */}
-            <div className="bg-white rounded-lg shadow">
-              <div className={`px-4 py-3 rounded-t-lg ${statusConfig.todo.color}`}>
+            <div className="board-column board-column--todo">
+              <div className="board-column-header">
                 <h3 className="text-lg font-semibold text-gray-900">
                   待处理 ({todoTasks.length})
                 </h3>
               </div>
-              <div className="p-4 space-y-4 min-h-96">
+              <div className="space-y-4">
                 {todoTasks.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">暂无任务</p>
                 ) : (
@@ -135,7 +194,11 @@ export const BoardPage: React.FC = () => {
                       key={task.id} 
                       task={task} 
                       onStatusChange={handleStatusChange}
+                      onAssignExecutor={handleAssignExecutor}
                       canEdit={user.role === 'executor' || user.id === task.creator_id}
+                      userCache={userCache}
+                      inviteInfo={inviteInfo}
+                      currentUser={user}
                     />
                   ))
                 )}
@@ -143,13 +206,13 @@ export const BoardPage: React.FC = () => {
             </div>
 
             {/* 进行中列 */}
-            <div className="bg-white rounded-lg shadow">
-              <div className={`px-4 py-3 rounded-t-lg ${statusConfig.in_progress.color}`}>
+            <div className="board-column board-column--progress">
+              <div className="board-column-header">
                 <h3 className="text-lg font-semibold text-gray-900">
                   进行中 ({inProgressTasks.length})
                 </h3>
               </div>
-              <div className="p-4 space-y-4 min-h-96">
+              <div className="space-y-4">
                 {inProgressTasks.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">暂无任务</p>
                 ) : (
@@ -158,7 +221,11 @@ export const BoardPage: React.FC = () => {
                       key={task.id} 
                       task={task} 
                       onStatusChange={handleStatusChange}
+                      onAssignExecutor={handleAssignExecutor}
                       canEdit={user.role === 'executor' || user.id === task.creator_id}
+                      userCache={userCache}
+                      inviteInfo={inviteInfo}
+                      currentUser={user}
                     />
                   ))
                 )}
@@ -166,13 +233,13 @@ export const BoardPage: React.FC = () => {
             </div>
 
             {/* 已完成列 */}
-            <div className="bg-white rounded-lg shadow">
-              <div className={`px-4 py-3 rounded-t-lg ${statusConfig.done.color}`}>
+            <div className="board-column board-column--done">
+              <div className="board-column-header">
                 <h3 className="text-lg font-semibold text-gray-900">
                   已完成 ({doneTasks.length})
                 </h3>
               </div>
-              <div className="p-4 space-y-4 min-h-96">
+              <div className="space-y-4">
                 {doneTasks.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">暂无任务</p>
                 ) : (
@@ -181,7 +248,11 @@ export const BoardPage: React.FC = () => {
                       key={task.id} 
                       task={task} 
                       onStatusChange={handleStatusChange}
+                      onAssignExecutor={handleAssignExecutor}
                       canEdit={user.role === 'executor' || user.id === task.creator_id}
+                      userCache={userCache}
+                      inviteInfo={inviteInfo}
+                      currentUser={user}
                     />
                   ))
                 )}
@@ -198,8 +269,12 @@ export const BoardPage: React.FC = () => {
 const TaskCard: React.FC<{
   task: Task;
   onStatusChange: (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => void;
+  onAssignExecutor: (taskId: string, executorId: string) => void;
   canEdit: boolean;
-}> = ({ task, onStatusChange, canEdit }) => {
+  userCache: Map<string, string>;
+  inviteInfo: Invite | null;
+  currentUser: any;
+}> = ({ task, onStatusChange, onAssignExecutor, canEdit, userCache, inviteInfo, currentUser }) => {
   const getStatusOptions = (currentStatus: 'todo' | 'in_progress' | 'done') => {
     const options: { value: 'todo' | 'in_progress' | 'done'; label: string }[] = [];
     if (currentStatus !== 'todo') options.push({ value: 'todo', label: '待处理' });
@@ -210,8 +285,14 @@ const TaskCard: React.FC<{
 
   const statusOptions = getStatusOptions(task.status);
 
+  const statusConfig = {
+    todo: 'status-badge status-badge--todo',
+    in_progress: 'status-badge status-badge--progress',
+    done: 'status-badge status-badge--done'
+  };
+
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+    <div className={`task-card task-card--${task.status}`}>
       <h4 className="font-medium text-gray-900 mb-2">{task.title}</h4>
       
       {task.description && (
@@ -219,13 +300,7 @@ const TaskCard: React.FC<{
       )}
 
       <div className="flex justify-between items-center mb-3">
-        <span className={`text-xs px-2 py-1 rounded-full ${
-          task.status === 'todo' 
-            ? 'bg-gray-100 text-gray-800' 
-            : task.status === 'in_progress'
-            ? 'bg-blue-100 text-blue-800'
-            : 'bg-green-100 text-green-800'
-        }`}>
+        <span className={statusConfig[task.status]}>
           {task.status === 'todo' ? '待处理' : task.status === 'in_progress' ? '进行中' : '已完成'}
         </span>
         
@@ -242,7 +317,7 @@ const TaskCard: React.FC<{
               <button
                 key={option.value}
                 onClick={() => onStatusChange(task.id, option.value)}
-                className="text-xs bg-white border border-gray-300 rounded px-2 py-1 hover:bg-gray-50 transition-colors"
+                className="text-xs modern-button modern-button--outline"
               >
                 {option.label}
               </button>
@@ -252,11 +327,44 @@ const TaskCard: React.FC<{
       )}
 
       <div className="mt-3 pt-3 border-t border-gray-200">
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-500">创建者: {task.creator_id.slice(0, 8)}...</span>
-          {task.executor_id && (
-            <span className="text-xs text-gray-500">执行者: {task.executor_id.slice(0, 8)}...</span>
-          )}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-gray-500">
+              创建者: {userCache.get(task.creator_id) || '加载中...'}
+            </span>
+          </div>
+          
+          <div className="flex justify-between items-center">
+            {task.executor_id ? (
+              <span className="text-xs text-gray-500">
+                执行者: {userCache.get(task.executor_id) || '加载中...'}
+              </span>
+            ) : (
+              <span className="text-xs text-gray-400 italic">未分配执行者</span>
+            )}
+            
+            {/* 只有创建者可以分配执行者 */}
+            {currentUser?.role === 'creator' && currentUser?.id === task.creator_id && inviteInfo?.executor_id && (
+              <div className="flex items-center gap-2">
+                {!task.executor_id && (
+                  <button
+                    onClick={() => onAssignExecutor(task.id, inviteInfo.executor_id!)}
+                    className="text-xs modern-button modern-button--outline px-2 py-1"
+                  >
+                    分配给: {userCache.get(inviteInfo.executor_id) || '加载中...'}
+                  </button>
+                )}
+                {task.executor_id && (
+                  <button
+                    onClick={() => onAssignExecutor(task.id, '')}
+                    className="text-xs modern-button modern-button--outline px-2 py-1"
+                  >
+                    取消分配
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

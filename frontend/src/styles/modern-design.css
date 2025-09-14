@@ -1,0 +1,656 @@
+/* TaskView 现代化设计系统 */
+
+:root {
+  /* 现代化色彩系统 */
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1e40af;
+  --color-primary-light: #dbeafe;
+  
+  --color-secondary: #64748b;
+  --color-secondary-dark: #334155;
+  --color-secondary-light: #f1f5f9;
+  
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  
+  /* 中性色彩 */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  
+  /* 任务状态色 */
+  --color-todo: #f59e0b;
+  --color-todo-bg: #fef3c7;
+  --color-todo-light: #fffbeb;
+  
+  --color-progress: #3b82f6;
+  --color-progress-bg: #dbeafe;
+  --color-progress-light: #eff6ff;
+  
+  --color-done: #10b981;
+  --color-done-bg: #d1fae5;
+  --color-done-light: #ecfdf5;
+  
+  /* 现代化阴影系统 */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* 毛玻璃效果 */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  
+  /* 现代化圆角 */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+  
+  /* 现代字体系统 */
+  --font-sans: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", "Menlo", "Consolas", monospace;
+  
+  /* 动画时长 */
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  
+  /* 缓动函数 */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* 全局重置和基础样式 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-gray-900);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+}
+
+/* 现代化卡片样式 */
+.modern-card {
+  background: var(--color-gray-100);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-gray-200);
+  transition: all var(--duration-300) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  z-index: 1;
+}
+
+.modern-card:hover {
+  box-shadow: var(--shadow-2xl);
+  transform: translateY(-4px);
+  border-color: var(--color-primary-light);
+}
+
+/* 毛玻璃卡片 */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+}
+
+/* 现代化按钮样式 */
+.modern-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-200) var(--ease-out);
+  text-decoration: none;
+  outline: none;
+  overflow: hidden;
+}
+
+.modern-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left var(--duration-500) var(--ease-out);
+}
+
+.modern-button:hover::before {
+  left: 100%;
+}
+
+.modern-button:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.modern-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 按钮尺寸 */
+.modern-button--sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+}
+
+.modern-button--md {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+}
+
+.modern-button--lg {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+
+/* 按钮变体 */
+.modern-button--primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.modern-button--primary:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.modern-button--secondary {
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border: 1px solid var(--color-gray-300);
+}
+
+.modern-button--secondary:hover {
+  background: var(--color-gray-200);
+  border-color: var(--color-gray-400);
+}
+
+.modern-button--outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.modern-button--outline:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+/* 现代化输入框 */
+.modern-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-gray-900);
+  background: white;
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--radius-lg);
+  transition: all var(--duration-200) var(--ease-out);
+  outline: none;
+}
+
+.modern-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modern-input::placeholder {
+  color: var(--color-gray-400);
+}
+
+.modern-input--error {
+  border-color: var(--color-error);
+}
+
+.modern-input--error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* 任务状态样式 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge--todo {
+  background: var(--color-todo-light);
+  color: var(--color-todo);
+  border: 1px solid var(--color-todo-bg);
+}
+
+.status-badge--progress {
+  background: var(--color-progress-light);
+  color: var(--color-progress);
+  border: 1px solid var(--color-progress-bg);
+}
+
+.status-badge--done {
+  background: var(--color-done-light);
+  color: var(--color-done);
+  border: 1px solid var(--color-done-bg);
+}
+
+/* 任务卡片样式 */
+.task-card {
+  background: var(--color-gray-100) !important;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  border: 2px solid var(--color-gray-200);
+  transition: all var(--duration-200) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-gray-300);
+  transition: all var(--duration-200) var(--ease-out);
+}
+
+.task-card--todo::before {
+  background: var(--color-todo);
+}
+
+.task-card--progress::before {
+  background: var(--color-progress);
+}
+
+.task-card--done::before {
+  background: var(--color-done);
+}
+
+.task-card:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* 看板列样式 */
+.board-column {
+  background: var(--color-gray-100);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  border: 2px solid var(--color-gray-200);
+  min-height: 600px;
+}
+
+.board-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--color-gray-200);
+}
+
+.board-column--todo {
+  border-color: var(--color-todo-bg);
+  background: linear-gradient(135deg, var(--color-todo-light) 0%, var(--color-gray-50) 100%);
+}
+
+.board-column--progress {
+  border-color: var(--color-progress-bg);
+  background: linear-gradient(135deg, var(--color-progress-light) 0%, var(--color-gray-50) 100%);
+}
+
+.board-column--done {
+  border-color: var(--color-done-bg);
+  background: linear-gradient(135deg, var(--color-done-light) 0%, var(--color-gray-50) 100%);
+}
+
+/* 现代化动画 */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 动画类 */
+.animate-slide-up {
+  animation: slideInUp var(--duration-300) var(--ease-out);
+}
+
+.animate-slide-left {
+  animation: slideInLeft var(--duration-300) var(--ease-out);
+}
+
+.animate-fade-scale {
+  animation: fadeInScale var(--duration-300) var(--ease-out);
+}
+
+.animate-pulse {
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* 顶部栏样式 */
+.modern-header {
+  background: var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 错误提示样式 */
+.error-alert {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  border-left: 4px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  color: #991b1b;
+}
+
+/* 加载状态样式 */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--color-gray-300);
+  border-top: 3px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+.loading-spinner-sm {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .modern-card {
+    border-radius: var(--radius-md);
+    margin: 0.25rem;
+    padding: 1rem;
+  }
+  
+  .modern-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+  
+  .board-column {
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    min-height: 400px;
+  }
+  
+  .task-card {
+    padding: 1rem;
+  }
+  
+  .board-column-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .modern-card {
+    border-radius: var(--radius-lg);
+    margin: 0.5rem;
+  }
+  
+  .modern-button {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.8125rem;
+  }
+  
+  .board-column {
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+    min-height: 500px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .modern-card {
+    margin: 0.75rem;
+  }
+  
+  .board-column {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modern-card:hover {
+    transform: translateY(-6px);
+  }
+  
+  .task-card:hover {
+    transform: translateY(-3px);
+  }
+  
+  .board-column {
+    min-height: 700px;
+  }
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-400);
+  border-radius: var(--radius-full);
+  transition: background var(--duration-200) var(--ease-out);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark), [data-theme="dark"] {
+  :root {
+    --color-gray-50: #0f172a;
+    --color-gray-100: #1e293b;
+    --color-gray-200: #334155;
+    --color-gray-300: #475569;
+    --color-gray-400: #64748b;
+    --color-gray-500: #94a3b8;
+    --color-gray-600: #cbd5e1;
+    --color-gray-700: #e2e8f0;
+    --color-gray-800: #f1f5f9;
+    --color-gray-900: #f8fafc;
+    
+    --glass-bg: rgba(30, 41, 59, 0.8);
+    --glass-border: rgba(148, 163, 184, 0.2);
+  }
+  
+  body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+  
+  .modern-card {
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-300);
+  }
+  
+  .modern-button--secondary {
+    background: var(--color-gray-200);
+    color: var(--color-gray-700);
+    border-color: var(--color-gray-400);
+  }
+  
+  .modern-button--secondary:hover {
+    background: var(--color-gray-300);
+    border-color: var(--color-gray-500);
+  }
+  
+  .modern-input {
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-400);
+    color: var(--color-gray-900);
+  }
+  
+  .board-column {
+    background: var(--color-gray-200);
+    border-color: var(--color-gray-400);
+  }
+  
+  .board-column--todo {
+    background: linear-gradient(135deg, var(--color-gray-100) 0%, var(--color-gray-200) 100%);
+    border-color: var(--color-todo);
+  }
+  
+  .board-column--progress {
+    background: linear-gradient(135deg, var(--color-gray-100) 0%, var(--color-gray-200) 100%);
+    border-color: var(--color-progress);
+  }
+  
+  .board-column--done {
+    background: linear-gradient(135deg, var(--color-gray-100) 0%, var(--color-gray-200) 100%);
+    border-color: var(--color-done);
+  }
+  
+  .task-card {
+    background: var(--color-gray-200) !important;
+    border-color: var(--color-gray-300);
+  }
+  
+  .modern-header {
+    background: var(--color-gray-200);
+    border-bottom-color: var(--color-gray-400);
+  }
+}

@@ -50,8 +50,8 @@ export const TaskBoardListPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
+    <div className="min-h-screen">
+      <header className="modern-header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
@@ -87,7 +87,7 @@ export const TaskBoardListPage: React.FC = () => {
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="modern-card">
             <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">选择看板</h2>
               <p className="text-sm text-gray-600 mt-1">请选择要查看的任务看板</p>

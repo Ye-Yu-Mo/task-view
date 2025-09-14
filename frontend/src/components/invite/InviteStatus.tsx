@@ -37,7 +37,7 @@ export const InviteStatus: React.FC<InviteStatusProps> = ({ invite }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
+    <div className="modern-card p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-medium text-gray-900">邀请码信息</h3>
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}>

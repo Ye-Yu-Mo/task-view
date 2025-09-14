@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{extract::{State, Path}, http::StatusCode, Json};
 use sea_orm::{ConnectionTrait, DatabaseConnection, Set};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -133,6 +133,42 @@ pub async fn login_simple(
             }))
         }
         Ok(None) => Err(StatusCode::UNAUTHORIZED),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+// 根据用户ID获取用户信息
+pub async fn get_user_by_id(
+    State(db): State<DatabaseConnection>,
+    Path(user_id): Path<String>,
+) -> Result<Json<UserResponse>, StatusCode> {
+    let sql = "SELECT id, username, email, role, created_at FROM users WHERE id = ? LIMIT 1";
+    
+    let result = db.query_one(
+        sea_orm::Statement::from_sql_and_values(
+            sea_orm::DatabaseBackend::Sqlite,
+            sql,
+            vec![user_id.into()]
+        )
+    ).await;
+    
+    match result {
+        Ok(Some(row)) => {
+            let id: String = row.try_get("", "id").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            let username: String = row.try_get("", "username").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            let email: String = row.try_get("", "email").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            let role: String = row.try_get("", "role").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            let created_at: String = row.try_get("", "created_at").map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+            Ok(Json(UserResponse {
+                id,
+                username,
+                email,
+                role,
+                created_at,
+            }))
+        }
+        Ok(None) => Err(StatusCode::NOT_FOUND),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }

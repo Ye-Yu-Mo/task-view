@@ -47,3 +47,8 @@ export const getInvites = async (creatorId: string): Promise<InviteListResponse>
 export const getExecutorInvites = async (executorId: string): Promise<InviteListResponse> => {
   return await api.get(`/invites/executor/${executorId}`);
 };
+
+// 获取邀请码详情
+export const getInviteDetails = async (inviteId: string): Promise<Invite> => {
+  return await api.get(`/invite/${inviteId}`);
+};

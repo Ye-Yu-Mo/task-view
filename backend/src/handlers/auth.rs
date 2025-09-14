@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{extract::{State, Path}, http::StatusCode, Json};
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
 use bcrypt;
@@ -117,5 +117,26 @@ pub async fn login(
             created_at: user.created_at.to_rfc3339(),
         },
         message: "登录成功".to_string(),
+    }))
+}
+
+// 根据用户ID获取用户信息
+pub async fn get_user_by_id(
+    State(db): State<DatabaseConnection>,
+    Path(user_id): Path<String>,
+) -> Result<Json<UserResponse>, StatusCode> {
+    let user = User::find()
+        .filter(user::Column::Id.eq(&user_id))
+        .one(&db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .ok_or(StatusCode::NOT_FOUND)?;
+
+    Ok(Json(UserResponse {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        created_at: user.created_at.to_rfc3339(),
     }))
 }

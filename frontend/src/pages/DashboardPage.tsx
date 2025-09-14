@@ -18,8 +18,8 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
+    <div className="min-h-screen">
+      <header className="modern-header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
@@ -42,7 +42,7 @@ export const DashboardPage: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+        <div className="modern-card">
           <div className="px-4 py-5 sm:p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">
               用户信息
@@ -78,7 +78,7 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 bg-white overflow-hidden shadow rounded-lg">
+        <div className="mt-8 modern-card">
           <div className="px-4 py-5 sm:p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">
               {user.role === 'creator' ? '创建者功能' : '执行者功能'}
