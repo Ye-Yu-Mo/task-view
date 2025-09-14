@@ -8,6 +8,8 @@ export interface Task {
   creator_id: string;
   executor_id?: string;
   invite_id: string;
+  completion_details?: string;
+  completed_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +30,7 @@ export interface UpdateTaskRequest {
 
 export interface UpdateTaskStatusRequest {
   status: 'todo' | 'in_progress' | 'done';
+  completion_details?: string;
 }
 
 export interface TaskListResponse {

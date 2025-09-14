@@ -24,6 +24,7 @@ pub struct UpdateTaskRequest {
 #[derive(Deserialize)]
 pub struct UpdateTaskStatusRequest {
     pub status: String, // "todo", "in_progress", "done"
+    pub completion_details: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -35,6 +36,8 @@ pub struct TaskResponse {
     pub creator_id: String,
     pub executor_id: Option<String>,
     pub invite_id: String,
+    pub completion_details: Option<String>,
+    pub completed_at: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -104,6 +107,8 @@ pub async fn create_task(
         creator_id: task.creator_id,
         executor_id: task.executor_id,
         invite_id: task.invite_id,
+        completion_details: task.completion_details,
+        completed_at: task.completed_at.map(|dt| dt.to_rfc3339()),
         created_at: task.created_at.to_rfc3339(),
         updated_at: task.updated_at.to_rfc3339(),
     }))
@@ -130,6 +135,8 @@ pub async fn get_tasks(
             creator_id: task.creator_id,
             executor_id: task.executor_id,
             invite_id: task.invite_id,
+            completion_details: task.completion_details,
+            completed_at: task.completed_at.map(|dt| dt.to_rfc3339()),
             created_at: task.created_at.to_rfc3339(),
             updated_at: task.updated_at.to_rfc3339(),
         })
@@ -188,6 +195,8 @@ pub async fn update_task(
         creator_id: updated_task.creator_id,
         executor_id: updated_task.executor_id,
         invite_id: updated_task.invite_id,
+        completion_details: updated_task.completion_details,
+        completed_at: updated_task.completed_at.map(|dt| dt.to_rfc3339()),
         created_at: updated_task.created_at.to_rfc3339(),
         updated_at: updated_task.updated_at.to_rfc3339(),
     }))
@@ -213,8 +222,16 @@ pub async fn update_task_status(
 
     // 更新任务状态
     let mut task_active: task::ActiveModel = task.into();
-    task_active.status = Set(payload.status);
+    task_active.status = Set(payload.status.clone());
     task_active.updated_at = Set(chrono::Utc::now().into());
+    
+    // 如果状态为完成，处理完成详情和完成时间
+    if payload.status == "done" {
+        if let Some(completion_details) = payload.completion_details {
+            task_active.completion_details = Set(Some(completion_details));
+        }
+        task_active.completed_at = Set(Some(chrono::Utc::now().into()));
+    }
 
     let updated_task = task_active
         .update(&db)
@@ -229,6 +246,8 @@ pub async fn update_task_status(
         creator_id: updated_task.creator_id,
         executor_id: updated_task.executor_id,
         invite_id: updated_task.invite_id,
+        completion_details: updated_task.completion_details,
+        completed_at: updated_task.completed_at.map(|dt| dt.to_rfc3339()),
         created_at: updated_task.created_at.to_rfc3339(),
         updated_at: updated_task.updated_at.to_rfc3339(),
     }))

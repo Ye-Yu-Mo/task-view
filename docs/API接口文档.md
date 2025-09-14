@@ -228,9 +228,15 @@ Content-Type: application/json
 **请求体**:
 ```json
 {
-  "status": "todo | in_progress | done"
+  "status": "todo | in_progress | done",
+  "completion_details": "完成详情（当status为done时可选）"
 }
 ```
+
+**说明**:
+- 当任务状态更改为 `done` 时，可以提供 `completion_details` 字段描述任务完成情况
+- 系统会自动设置 `completed_at` 时间戳
+- 完成详情支持 Markdown 格式
 
 #### 删除任务
 ```http
@@ -268,6 +274,8 @@ DELETE /api/task/{task_id}
 - `creator_id`: 创建者ID
 - `executor_id`: 执行者ID（可为空）
 - `invite_id`: 关联的邀请码ID
+- `completion_details`: 完成详情（可为空，任务完成时填写）
+- `completed_at`: 完成时间（可为空，状态变为done时自动设置）
 - `created_at`: 创建时间
 - `updated_at`: 更新时间
 
@@ -331,10 +339,15 @@ curl -X POST http://127.0.0.1:20000/api/invites/use \
 # 3. 查看任务列表
 curl http://127.0.0.1:20000/api/tasks/邀请码ID
 
-# 4. 更新任务状态
+# 4. 更新任务状态到进行中
 curl -X PUT http://127.0.0.1:20000/api/task/任务ID/status \
   -H "Content-Type: application/json" \
   -d '{"status":"in_progress"}'
+
+# 5. 完成任务并添加完成详情
+curl -X PUT http://127.0.0.1:20000/api/task/任务ID/status \
+  -H "Content-Type: application/json" \
+  -d '{"status":"done","completion_details":"任务已按要求完成，所有测试通过，交付物已上传到指定目录"}'
 ```
 
 ---

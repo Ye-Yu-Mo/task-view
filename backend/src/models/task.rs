@@ -13,6 +13,8 @@ pub struct Model {
     pub creator_id: String,
     pub executor_id: Option<String>,
     pub invite_id: String,
+    pub completion_details: Option<String>,
+    pub completed_at: Option<DateTimeWithTimeZone>,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
 }

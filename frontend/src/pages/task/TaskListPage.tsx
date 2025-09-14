@@ -12,6 +12,8 @@ interface Task {
   creator_id: string;
   executor_id?: string;
   invite_id: string;
+  completion_details?: string;
+  completed_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -138,6 +140,19 @@ const TaskListPage: React.FC = () => {
 
                 {task.description && (
                   <p className="text-gray-600 mb-4">{task.description}</p>
+                )}
+
+                {/* 显示完成详情 */}
+                {task.status === 'done' && task.completion_details && (
+                  <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-4">
+                    <h5 className="text-sm font-medium text-green-800 mb-1">完成详情:</h5>
+                    <p className="text-sm text-green-700">{task.completion_details}</p>
+                    {task.completed_at && (
+                      <p className="text-xs text-green-600 mt-1">
+                        完成时间: {new Date(task.completed_at).toLocaleString('zh-CN')}
+                      </p>
+                    )}
+                  </div>
                 )}
 
                 <div className="flex justify-between items-center text-sm text-gray-500">

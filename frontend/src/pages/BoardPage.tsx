@@ -5,6 +5,7 @@ import { getTasks, updateTaskStatus, updateTask, type Task } from '../services/t
 import { getUserById } from '../services/auth';
 import { getInviteDetails, type Invite } from '../services/invite';
 import { Button } from '../components/ui/Button';
+import { TaskCompletionModal } from '../components/ui/TaskCompletionModal';
 
 export const BoardPage: React.FC = () => {
   const { inviteId } = useParams<{ inviteId: string }>();
@@ -14,6 +15,8 @@ export const BoardPage: React.FC = () => {
   const [error, setError] = useState('');
   const [userCache, setUserCache] = useState<Map<string, string>>(new Map()); // 用户ID -> 用户名的缓存
   const [inviteInfo, setInviteInfo] = useState<Invite | null>(null); // 邀请码信息
+  const [completionModal, setCompletionModal] = useState<{ isOpen: boolean; task: Task | null }>({ isOpen: false, task: null });
+  
 
   useEffect(() => {
     if (inviteId) {
@@ -83,6 +86,15 @@ export const BoardPage: React.FC = () => {
   };
 
   const handleStatusChange = async (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => {
+    // 如果状态改为完成，显示完成详情输入框
+    if (newStatus === 'done') {
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        setCompletionModal({ isOpen: true, task });
+        return;
+      }
+    }
+
     try {
       await updateTaskStatus(taskId, { status: newStatus });
       // 更新本地状态
@@ -93,6 +105,24 @@ export const BoardPage: React.FC = () => {
       );
     } catch (err) {
       setError('更新任务状态失败');
+    }
+  };
+
+  const handleTaskCompletion = async (taskId: string, completionDetails: string) => {
+    try {
+      const updatedTask = await updateTaskStatus(taskId, { 
+        status: 'done', 
+        completion_details: completionDetails 
+      });
+      // 更新本地状态
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? updatedTask : task
+        )
+      );
+    } catch (err) {
+      setError('更新任务状态失败');
+      throw err;
     }
   };
 
@@ -260,6 +290,16 @@ export const BoardPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* 任务完成详情输入模态框 */}
+        {completionModal.task && (
+          <TaskCompletionModal
+            task={completionModal.task}
+            isOpen={completionModal.isOpen}
+            onClose={() => setCompletionModal({ isOpen: false, task: null })}
+            onComplete={handleTaskCompletion}
+          />
+        )}
       </main>
     </div>
   );
@@ -297,6 +337,19 @@ const TaskCard: React.FC<{
       
       {task.description && (
         <p className="text-sm text-gray-600 mb-3">{task.description}</p>
+      )}
+
+      {/* 显示完成详情 */}
+      {task.status === 'done' && task.completion_details && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-3">
+          <h5 className="text-sm font-medium text-green-800 mb-1">完成详情:</h5>
+          <p className="text-sm text-green-700">{task.completion_details}</p>
+          {task.completed_at && (
+            <p className="text-xs text-green-600 mt-1">
+              完成时间: {new Date(task.completed_at).toLocaleString('zh-CN')}
+            </p>
+          )}
+        </div>
       )}
 
       <div className="flex justify-between items-center mb-3">
