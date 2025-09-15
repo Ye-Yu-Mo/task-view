@@ -32,6 +32,8 @@ yarn-error.log*
 /.pnp
 .pnp.js
 /dist
+# 允许前端构建文件被提交到仓库
+!frontend/dist/
 /build
 /.next
 /out

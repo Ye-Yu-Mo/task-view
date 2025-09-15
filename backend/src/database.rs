@@ -20,12 +20,15 @@ impl Database {
         if Self::should_run_migrations(db).await? {
             tracing::info!("Running database migrations...");
             
-            // 读取迁移文件
-            let migration_sql = fs::read_to_string("migrations/001_initial.sql")
-                .map_err(|e| DbErr::Custom(format!("Failed to read migration file: {}", e)))?;
+            // 运行001迁移
+            let migration_001 = fs::read_to_string("/app/migrations/001_initial.sql")
+                .map_err(|e| DbErr::Custom(format!("Failed to read migration file 001: {}", e)))?;
+            db.execute_unprepared(&migration_001).await?;
             
-            // 执行迁移
-            db.execute_unprepared(&migration_sql).await?;
+            // 运行002迁移  
+            let migration_002 = fs::read_to_string("/app/migrations/002_add_completion_details.sql")
+                .map_err(|e| DbErr::Custom(format!("Failed to read migration file 002: {}", e)))?;
+            db.execute_unprepared(&migration_002).await?;
             
             tracing::info!("Database migrations completed");
         }

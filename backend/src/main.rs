@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
         .layer(cors)
         .with_state(db.connection);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     println!("Server running on http://{}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;

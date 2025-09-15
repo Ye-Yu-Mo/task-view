@@ -1,0 +1,65 @@
+name: 构建前端并保存到仓库
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/public/**'
+      - 'frontend/*.json'
+      - 'frontend/*.ts'
+      - 'frontend/*.js'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: 设置 Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: 安装前端依赖
+      working-directory: frontend
+      run: npm ci
+        
+    - name: 运行 ESLint 检查
+      working-directory: frontend
+      run: npm run lint
+        
+    - name: 构建前端项目
+      working-directory: frontend
+      run: npm run build
+        
+    - name: 检查是否有构建文件变化
+      id: verify-changed-files
+      run: |
+        if [ -n "$(git status --porcelain frontend/dist)" ]; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: 提交构建结果
+      if: steps.verify-changed-files.outputs.changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        git add frontend/dist/
+        git commit -m "🤖 自动构建: 更新前端构建文件
+
+        - 构建时间: $(date '+%Y-%m-%d %H:%M:%S UTC')
+        - 提交哈希: ${{ github.sha }}
+        - 分支: ${{ github.ref_name }}"
+        git push
