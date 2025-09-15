@@ -1,38 +1,40 @@
+version: '3.8'
+
 services:
-  taskview:
+  backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
-    image: taskview:latest
-    container_name: taskview-app
-    restart: unless-stopped
+    container_name: task-view-backend
     ports:
-      - "3000:80"  # 映射到本地 3000 端口
+      - "20000:20000"
     environment:
-      - JWT_SECRET=${JWT_SECRET:-taskview-jwt-secret-key-please-change-in-production}
-      - RUST_LOG=${RUST_LOG:-info}
-      - TZ=Asia/Shanghai
+      - DATABASE_URL=sqlite:///app/data/database.db
+      - RUST_LOG=info
+      - PORT=20000
     volumes:
-      - taskview-data:/app/data  # 持久化数据库文件
-      - taskview-logs:/var/log/nginx  # 持久化日志
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    labels:
-      - "com.taskview.description=TaskView - 任务看板管理系统"
-      - "com.taskview.version=1.0"
+      - backend_data:/app/data
+    networks:
+      - task-view-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: task-view-frontend
+    ports:
+      - "20001:80"
+    depends_on:
+      - backend
+    networks:
+      - task-view-network
+    restart: unless-stopped
 
 volumes:
-  taskview-data:
-    name: taskview-data
-    driver: local
-  taskview-logs:
-    name: taskview-logs
+  backend_data:
     driver: local
 
 networks:
-  default:
-    name: taskview-network
+  task-view-network:
+    driver: bridge

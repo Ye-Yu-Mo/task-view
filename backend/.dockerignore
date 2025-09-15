@@ -1,0 +1,8 @@
+target/
+.git
+.gitignore
+README.md
+.env
+*.db
+database.db
+tasks.db
